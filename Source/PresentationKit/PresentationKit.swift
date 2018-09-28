@@ -12,7 +12,7 @@ import UIKit
 
 extension UIViewController {
     
-    /// Presents a view controller modally as if presented from another view controller, but here a new window is created with root view controller that presents the current view controller. On `dismiss(animated:, completion:)` on this instance the newly created window is destroyed and last used window becomes the `keyWindow` of the app again.
+    /// Presents a view controller modally as if presented from another view controller, but here a new window is created with root view controller that presents the current view controller. On `dismiss(animated:, completion:)` on this instance the newly created window is destroyed and last used window becomes the `keyWindow` of the app again. However, **dismissing is not working correctly with `UIViewController`s which have** `UIModalPresentationStyle.overCurrentContext` **. In that case you should call** `UIWindow.destroyPresentationKitWindow()` **to forcefully destroy the window.**
     ///
     /// - Parameters:
     ///   - animated: Pass true to animate the presentation; otherwise, pass false.
@@ -91,6 +91,19 @@ extension RootViewController {
         windowReference?.resignKey()
         windowReference = nil
         presentationOptions = nil
+    }
+}
+
+extension UIWindow {
+    
+    /// Forcefully destroys the `UIWindow` used by `PresentationKit`. Usefull when you are presenting `UIViewController`s with `UIModalPresentationStyle.overCurrentContext` which breaks the dismiss logic of PresentationKit because it does not call `viewWillAppear` on its `presentingViewController`.
+    ///
+    /// - Returns: true if operation completes in success, false if not.
+    @discardableResult public static func destroyPresentationKitWindow() -> Bool {
+        guard let window = UIApplication.shared.windows.filter( { $0.tag == .newWindowTag }).first else { return false }
+        guard let rootController = window.rootViewController as? RootViewController else { return false }
+        rootController.dismissWindow()
+        return false
     }
 }
 
