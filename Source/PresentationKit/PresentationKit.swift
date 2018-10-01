@@ -112,7 +112,7 @@ extension UIWindow {
 extension Int {
     
     /// Tag used for distinguishing PresentationKit's window from all windows of the app.
-    static fileprivate var newWindowTag: Int { return 0xdeadBeef }
+    fileprivate static let newWindowTag = 0xDEAD
 }
 
 extension UIWindow {
