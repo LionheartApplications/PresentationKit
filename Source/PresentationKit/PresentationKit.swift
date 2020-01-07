@@ -20,7 +20,9 @@ extension UIViewController {
     public func present(animated: Bool, completion: (() -> Void)?) {
         checkForAlertController()
         let newWindow = UIWindow.new
+        (newWindow.rootViewController as? RootViewController)?.lastKeyWindow = UIApplication.shared.keyWindow
         newWindow.makeKeyAndVisible()
+        
         let options = RootViewController.PresentationOptions(viewController: self, animated: animated, completion: completion)
         (newWindow.rootViewController as? RootViewController)?.presentationOptions = options
     }
@@ -51,6 +53,10 @@ class RootViewController: UIViewController {
     
     /// Someone needs to hold a strong reference to the new window so its here
     fileprivate var windowReference: UIWindow?
+    
+    /// Reference to the last key window before `PresentationKit`'s window became key window.
+    fileprivate weak var lastKeyWindow: UIWindow?
+    
     private var hasPresentedViewController = false
     fileprivate var presentationOptions: RootViewController.PresentationOptions?
 }
@@ -88,7 +94,7 @@ extension RootViewController {
     
     func dismissWindow() {
         guard hasPresentedViewController else { return }
-        windowReference?.resignKey()
+        lastKeyWindow?.makeKeyAndVisible()
         windowReference = nil
         presentationOptions = nil
     }
